@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect , HttpResponse
 from django.contrib.auth import authenticate , login , logout
+from .models import Profile
 
 # Create your views here.
 def login_page(request):
@@ -18,7 +19,7 @@ def login_page(request):
             return HttpResponseRedirect(request.path_info) #Redirecting on same page.........
 
             if user_obj[0].profile.is_email_verified:
-                messages.warning(requet,'your account is nt verified')
+                messages.warning(requet,'your account is not verified')
                 return HttpResponseRedirect(request.path_info)
 
         user_obj = authenticate(username = email, password = password)
@@ -32,7 +33,7 @@ def login_page(request):
     return render(request, 'Accounts/login.html')
 
 def register_page(request):
-    if request.method== 'POST':
+    if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         email = request.POST.get('email')
@@ -46,7 +47,7 @@ def register_page(request):
             return HttpResponseRedirect(request.path_info) #Redirecting on same page.........
             
             #else Creating new user and setting password............
-        user_obj = User.objects.create(first_name=first_name,last_name=last_name,email=email,username=email)  
+        user_obj = User.objects.create(first_name=first_name, last_name=last_name, email=email, username=email)  
         user_obj.set_password(password)
         user_obj.save()
 
@@ -57,3 +58,12 @@ def register_page(request):
 
     return render(request, 'Accounts/register.html')    
 
+def activate_email(request , email__token):
+    try:
+        user = Profile.objects.get(email_token = email_token)
+        user.is_email_verified = True
+        user.save()
+        return redirect('/')
+
+    except Exception as e:
+        return HttpResponse('Invalid email token ') 

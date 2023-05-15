@@ -4,7 +4,7 @@ from base.models import BaseModel
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import uuid
-from base.emails import send_account_acctivation_email
+from base.emails import send_account_activation_email
     
 
 
@@ -19,9 +19,10 @@ class Profile(BaseModel):
 def send_email_token(sender, instance, created,**kwargs):
     try:
         if created:
+            profile.objects.create(user = instance , email_token = email_token)
             email_token = str(uuid.uuid4())
             email = instance.email
-            send_acount_activation_email(email, email_token)
+            send_account_activation_email(email, email_token)
 
     except Exception as e:
         print(e) 
